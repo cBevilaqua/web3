@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100&display=swap" rel="stylesheet">
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.7.0-rc.0/web3.min.js" integrity="sha512-/PTXSvaFzmO4So7Ghyq+DEZOz0sNLU4v1DP4gMOfY3kFu9L/IKoqSHZ6lNl3ZoZ7wT20io3vu/U4IchGcGIhfw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+	<title>Simple Dapp</title>
+	<style type="text/css">
+		font-family: 'Roboto', sans-serif;
+
+		h1 {
+			text-align: center !important;
+		}
+
+		body {
+			width: 100%;
+			height:  100%;
+		}
+
+		#main {
+			margin: 0 auto;
+			display: flex;
+			flex-direction: column;
+			max-width: 300px;
+			min-height: 200px;
+			align-items: center;
+			justify-content: space-between;
+		}
+	</style>
+</head>
+<body>
+	<h1>Store a Number</h1>
+
+	<div id="main">
+		<input id="number" type="number" placeholder="Number">
+		<br>
+		<button id="saveNumber">Save Number</button>
+		<br>
+		<button id="retrieve">Retrieve</button>
+		<strong>Stored value is: </strong><span id="savedValue"></span>
+	</div>
+
+	<script>
+
+		var abi = [
+		{
+			"inputs": [],
+			"name": "retrieve",
+			"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "num",
+				"type": "uint256"
+			}
+			],
+			"name": "store",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		}
+		]
+
+		window.web3 = new Web3(web3.currentProvider);
+
+		// https://web3js.readthedocs.io/en/v1.2.11/web3-eth-contract.html
+		// https://bitsofco.de/calling-smart-contract-functions-using-web3-js-call-vs-send/
+
+		// console.log("vweb3.currentProvider", web3.currentProvider)
+
+		window.ethereum.enable().then(function() {
+			var contract = new web3.eth.Contract(abi, "0x1b4a9FD0D7976ff757FF215AeB0D56C5eaa179F6")
+			//console.log("my contrcat ", contract)
+
+			document.getElementById("saveNumber").onclick = function() {
+
+				var number = document.getElementById("number").value
+
+				if (!number) {
+					alert("fill a value")
+					return
+				}
+				contract.methods.store(parseInt(number)).send({ from: web3.currentProvider.selectedAddress }, function (err, result) {
+					console.log("err call ", err)
+					console.log("result call ", result)
+				})
+			}
+
+			document.getElementById("retrieve").onclick = function() {
+				contract.methods.retrieve().call({ from: web3.currentProvider.selectedAddress }, function (err, result) {
+					console.log("retrieve err ", err)
+					console.log("retrieve result ", result)
+					document.getElementById("savedValue").innerHTML = result.toString()
+				})
+			}
+		})
+
+
+	</script>
+</body>
+</html>
