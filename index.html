@@ -2,7 +2,8 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,6 +23,13 @@
       height:  100%;
     }
 
+    input, button {
+      height: 30px;
+      border: 2px solid #eb9046;
+      border-radius: 5px;
+      outline: none;
+    }
+
     #main {
       margin: 0 auto;
       display: flex;
@@ -38,11 +46,11 @@
 
   <div id="main">
     <input id="number" type="number" placeholder="Number">
-    <br>
     <button id="saveNumber">Save Number</button>
-    <br>
     <button id="retrieve">Retrieve</button>
-    <strong>Stored value is: </strong><span id="savedValue"></span>
+    <strong>Latest stored value is: </strong><span id="savedValue"></span>
+
+    <small>* you must be connected to the Ropsten test network</small>
   </div>
 
   <script>
@@ -75,6 +83,10 @@
     }
     ];
 
+    if (!web3) {
+      alert("Please enable the MetaMask extension!");
+    }
+
     window.web3 = new Web3(web3.currentProvider);
 
     // https://web3js.readthedocs.io/en/v1.2.11/web3-eth-contract.html
@@ -84,7 +96,9 @@
     window.ethereum.enable().then(function() {
       var contract = new web3.eth.Contract(abi, "0x1b4a9FD0D7976ff757FF215AeB0D56C5eaa179F6")
 
-      document.getElementById("saveNumber").onclick = function() {
+      var sendBtn = document.getElementById("saveNumber")
+
+      sendBtn.onclick = function() {
 
         var number = document.getElementById("number").value
 
@@ -92,16 +106,30 @@
           alert("fill a value")
           return
         }
+
+        sendBtn.innerText = "Processing...";
+        sendBtn.disabled = true;
+
         contract.methods.store(parseInt(number)).send({ from: web3.currentProvider.selectedAddress }, function (err, result) {
-          console.log("err call ", err)
-          console.log("result call ", result)
+          if (err) {
+            console.log("error ", err);
+          } else {
+            console.log("result call ", result)
+          }
+        }).on('receipt', function() {
+          alert("Transaction Succeeded!");
+          sendBtn.innerText = "Save Number";
+          sendBtn.disabled = false;
         })
       }
 
       document.getElementById("retrieve").onclick = function() {
         contract.methods.retrieve().call({ from: web3.currentProvider.selectedAddress }, function (err, result) {
-          console.log("retrieve err ", err)
-          console.log("retrieve result ", result)
+          if (err) {
+            console.log("error ", err);
+          } else {
+            console.log("result call ", result)
+          }
           document.getElementById("savedValue").innerHTML = result.toString()
         })
       }
