@@ -48,6 +48,7 @@
     <input id="number" type="number" placeholder="Number">
     <button id="saveNumber">Save Number</button>
     <button id="retrieve">Retrieve</button>
+    <button id="transfer">Transfer</button>
     <strong>Latest stored value is: </strong><span id="savedValue"></span>
 
     <small>* you must be connected to the Ropsten test network</small>
@@ -88,7 +89,7 @@
     }
 
     window.web3 = new Web3(web3.currentProvider);
-
+    //window.web3 = new Web3("https://data-seed-prebsc-1-s1.binance.org:8545")
     // https://web3js.readthedocs.io/en/v1.2.11/web3-eth-contract.html
     // https://bitsofco.de/calling-smart-contract-functions-using-web3-js-call-vs-send/
 
@@ -132,6 +133,13 @@
           }
           document.getElementById("savedValue").innerHTML = result.toString()
         })
+      }
+
+      document.getElementById("transfer").onclick = function() {
+
+        var account = web3.currentProvider.selectedAddress
+
+        web3.eth.sendTransaction({ to: account, from: account, value: web3.utils.toWei("0.1", "ether")});
       }
     })
 
